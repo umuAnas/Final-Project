@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useUserContext } from '../../contexts/usercontext'; 
+import { useUserContext } from '../../contexts/UseUserContext.jsx'; 
 import { getStudentDashboardPath } from "../../pages/Student/studentPath.js";
 
 export default function ProtectedRoute({ children, adminOnly = false, allowedRoles }) {

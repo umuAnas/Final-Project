@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { checkAdmin, logout } from "../../service/authService.js";
-import { useUserContext } from "../../contexts/usercontext.jsx";
+import { useUserContext } from "../../contexts/UseUserContext.jsx";
 import "./WelcomePage.css";
 
 const WelcomePage = () => {

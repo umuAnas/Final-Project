@@ -10,49 +10,66 @@ import toSafeUser from "../utils/toSafeUser.js";
 
 export const login = async (req, res) => {
     const { emailAddress, password } = req.body;
-
+  
     try {
-        const user = await User.findOne({ emailAddress });
-
-        if (!user) {
-            return res.status(400).json({
-                message: "Invalid email or password"
-            });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            return res.status(400).json({
-                message: "Invalid email or password"
-            });
-        }
+      const DUMMY_PASSWORD = process.env.DUMMY_PASSWORD;
+  
+      const user = await User.findOne({
+        emailAddress,
+        status: "active"
+      });
+  
+      const hashToCompare = user
+        ? user.password
+        : DUMMY_PASSWORD;
+  
+      const isMatch = await bcrypt.compare(
+        password,
+        hashToCompare
+      );
+  
+      if (!user || !isMatch) {
+        return res.status(401).json({
+          message: "Invalid email or password"
+        });
+      }
+  
       if(user.status === "blocked"){
         return res.status(403).json({message:"Your account has been blocked.Please contact support"})
       }
-        const accessToken = generateAccessToken(String(user._id), user.role);
-        const refreshToken = generateRefreshToken(String(user._id), user.role);
-        
-        res.cookie("refresh_token", refreshToken, {
+
+      const accessToken = generateAccessToken(
+        String(user._id),
+        user.role
+      );
+  
+      const refreshToken = generateRefreshToken(
+        String(user._id),
+        user.role
+      );
+  
+    res.cookie("refresh_token", refreshToken, {
             httpOnly: true,
             secure:process.env.NODE_ENV==="production",
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path:"/",
             sameSite:"lax"
         });
-
-        return res.status(200).json({
-            message: "Login successful",
-            accessToken:accessToken,
-            user: toSafeUser(user)
-        });
-
+  
+      
+  
+      return res.status(200).json({
+        message: "Login successful",
+        user: toSafeUser(user),
+        accessToken:accessToken
+      });
+  
     } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        });
+      return res.status(500).json({
+        message: error.message
+      });
     }
-};
+  };
 
 
 export const forgotPassword = async (req, res) => {
@@ -208,7 +225,7 @@ export const logout = async (req, res) => {
             path: "/",
             sameSite: "lax"
         });
-
+//return new access token
         return res.status(200).json({
             message: "Logged out successfully"
         });

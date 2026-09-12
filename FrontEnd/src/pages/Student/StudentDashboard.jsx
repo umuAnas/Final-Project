@@ -1,5 +1,5 @@
 import { NavLink, Navigate, Outlet, useLocation, useParams } from "react-router-dom";
-import { useUserContext } from "../../contexts/usercontext.jsx";
+import { useUserContext } from "../../contexts/UseUserContext.jsx";
 import { getStudentDashboardPath, toStudentSlug } from "./studentPath.js";
 import StudentPayments from "./StudentPayments.jsx";
 import "./StudentDashboard.css";

@@ -42,7 +42,6 @@ export const register = async (req, res) => {
             emailAddress,
             phone,
             password: hashedPassword,
-            role: "student"
         });
 
         return res.status(201).json({

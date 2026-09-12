@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import User from "../Model/usersModel.js";
 
 
-
 export const isAdmin = async (req, res, next) => {
     try {
         const userId = req.user.id;
@@ -55,5 +54,4 @@ export function verifyAccessToken(req, res, next) {
         });
     }
 }
-
 

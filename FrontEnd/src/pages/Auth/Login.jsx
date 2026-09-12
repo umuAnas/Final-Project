@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./Login.css";
 import { login } from "../../service/authService.js";
-import { useUserContext } from "../../contexts/usercontext.jsx";
+import { useUserContext } from "../../contexts/UseUserContext.jsx";
  import { getStudentDashboardPath } from "../Student/studentPath.js";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -24,13 +24,13 @@ function Login() {
       setAccessToken(response.data.accessToken);
 
       if (loggedInUser?.role === "admin") {
-        navigate("/welcome");
+        navigate("/admin");
       } else if (loggedInUser?.role === "student") {
         navigate(getStudentDashboardPath(loggedInUser));
       } else if (loggedInUser?.role === "instructor") {
-        navigate("/welcome");
+        navigate("/instructor-dashboard");
       } else {
-        navigate("/welcome");
+        navigate("/");
       }
     } catch (err) {
       setError(err.response?.data?.message || err.message);

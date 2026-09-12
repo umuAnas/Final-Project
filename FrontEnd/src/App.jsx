@@ -20,10 +20,11 @@ import StudentDashboard, {
   StudentSettings,
 } from "./pages/Student/StudentDashboard.jsx";
 
-import { UserContextProvider } from "./contexts/usercontext.jsx"
 
+import { UserContextProvider } from "./contexts/UserContext.jsx";
 import Footer from "./components/common/Footer.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
+
 
 function AppContent() {
   return (
@@ -52,7 +53,7 @@ function AppContent() {
             <Route path="instructors" element={<InstructorsList />} />
             <Route path="payments" element={<PaymentManagement />} />
             <Route path="courses" element={<ManageCourses />} />
-            
+
           </Route>
           <Route
             path="/student-dashboard/:studentName"

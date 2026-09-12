@@ -39,13 +39,17 @@ function Register({ onRegisterSuccess }) {
 
     setLoading(true);
     try {
+      
+    
       const response = await register(payload);
       if (onRegisterSuccess) {
         onRegisterSuccess(response.data);
-      } else {
+      } 
+      else {
         navigate("/login");
-      }
-    } catch (err) {
+      
+    } 
+  }catch (err) {
       setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);

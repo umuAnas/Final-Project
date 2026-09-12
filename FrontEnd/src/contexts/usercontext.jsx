@@ -1,3 +1,4 @@
+// src/context/UserContext.jsx
 import { createContext, useState, useEffect } from "react";
 import { setGlobalAccessToken } from "../service/axiosInstance.js";
 
@@ -41,7 +42,7 @@ export const UserContextProvider = ({ children }) => {
     accessToken: state.accessToken,
     loading: state.loading,
     setUser,
-    setAccessToken,
+    setAccessToken //login handeler store new token
   };
 
   return (
@@ -50,5 +51,8 @@ export const UserContextProvider = ({ children }) => {
     </UserContext.Provider>
   );
 };
+
+
+  export default UserContext
 
 

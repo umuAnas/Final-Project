@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import DBConnect from "./Config/dbConfig.js";
 
+
 import { userRoute } from "./Router/user.route.js";
 import { authRoute } from "./Router/auth.route.js";
 import { courseRoute } from "./Router/course.route.js";
@@ -20,6 +21,7 @@ app.use(
     cors({
         origin:"http://localhost:5173",
         credentials:true,
+        
     })
 );
 
