@@ -1,7 +1,7 @@
 import express from "express";
 
 import {register,viewUser,updateUser,getAllStudents,getAllInstructors,registerUserByAdmin,getStudent
-} from "../Controller/userController.js";
+,updateStudentStatus} from "../Controller/userController.js";
 
 import {verifyAccessToken, isAdmin} from "../Middlewares/authMiddleware.js";
 
@@ -62,3 +62,8 @@ userRoute.get(
     verifyAccessToken,
     getStudent
 );
+userRoute.patch(
+    "/status/:id",
+    verifyAccessToken,
+    isAdmin,
+    updateStudentStatus)

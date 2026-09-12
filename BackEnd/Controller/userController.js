@@ -217,3 +217,35 @@ export const getStudent = async (req, res) => {
         });
     }
 };
+export const updateStudentStatus = async (req, res) => {
+    try {
+        const { id } = req.params; 
+        const { status } = req.body; // Expecting "active", "blocked", or "finished"
+
+        // Match the lowercase enum array
+        const allowedStatuses = ["active", "blocked", "finished"];
+        if (!allowedStatuses.includes(status)) {
+            return res.status(400).json({
+                message: "Invalid status value. Must be active, blocked, or finished."
+            });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { status: status },
+            { new: true, runValidators: true }
+        ).select("-password -passwordResetToken -passwordResetExpires");
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json({
+            message: `User status successfully updated to ${status}`,
+            user: toSafeUser(updatedUser)
+        });
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
