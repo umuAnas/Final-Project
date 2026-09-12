@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { api } from "../../service/axiosInstance.js"; // Make sure path matches your project
 import {
   formatPaymentStatus,
   getCourseIdDisplay,
@@ -18,6 +19,7 @@ const emptyForm = {
 
 function StudentPayments() {
   const [payments, setPayments] = useState([]);
+  const [availableCourses, setAvailableCourses] = useState([]); // Holds courses from backend
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -33,6 +35,7 @@ function StudentPayments() {
   useEffect(() => {
     let cancelled = false;
 
+    // 1. Fetch user payments
     getMyPayments()
       .then((res) => {
         if (cancelled) return;
@@ -42,14 +45,21 @@ function StudentPayments() {
       })
       .catch((err) => {
         if (cancelled) return;
-        setError(
-          err.response?.data?.message ||
-            err.message ||
-            "Unable to load payment history."
-        );
+        setError(err.response?.data?.message || err.message || "Unable to load payment history.");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
+      });
+
+    // 2. Fetch courses list to populate dropdown
+    api.get("/course")
+      .then((res) => {
+        if (cancelled) return;
+        const rows = res.data?.data ?? res.data ?? [];
+        setAvailableCourses(Array.isArray(rows) ? rows : []);
+      })
+      .catch((err) => {
+        console.error("Failed to load courses for selection", err);
       });
 
     return () => {
@@ -59,19 +69,32 @@ function StudentPayments() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // If student changes Course selection, find the course and autofill data
+    if (name === "courseSelect") {
+      const selectedCourse = availableCourses.find((c) => c._id === value);
+      if (selectedCourse) {
+        setFormData((prev) => ({
+          ...prev,
+          courseId: selectedCourse._id,
+          coursePrice: selectedCourse.price || selectedCourse.coursePrice || selectedCourse.courseDuration || "", 
+          amount: prev.paymentType === "full" ? (selectedCourse.price || selectedCourse.coursePrice || "") : prev.amount
+        }));
+      } else {
+        // Reset fields if they select the empty option
+        setFormData((prev) => ({ ...prev, courseId: "", coursePrice: "", amount: "" }));
+      }
+      return;
+    }
+
     setFormData((prev) => {
       if (name === "paymentMethod" && value === "Cash") {
-        return {
-          ...prev,
-          paymentMethod: value,
-          transactionId: "",
-        };
+        return { ...prev, paymentMethod: value, transactionId: "" };
       }
-
-      return {
-        ...prev,
-        [name]: value,
-      };
+      if (name === "paymentType" && value === "full") {
+        return { ...prev, paymentType: value, amount: prev.coursePrice };
+      }
+      return { ...prev, [name]: value };
     });
   };
 
@@ -95,18 +118,11 @@ function StudentPayments() {
       }
 
       const res = await submitPayment(paymentData);
-      setMessage(
-        res.data?.message ||
-          "Payment submitted successfully. Waiting for admin approval."
-      );
+      setMessage(res.data?.message || "Payment submitted successfully. Waiting for admin approval.");
       setFormData(emptyForm);
       await loadPayments();
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Unable to submit payment."
-      );
+      setError(err.response?.data?.message || err.message || "Unable to submit payment.");
     } finally {
       setSubmitting(false);
     }
@@ -114,12 +130,11 @@ function StudentPayments() {
 
   return (
     <>
+      {/* Payment History Table Section */}
       <div className="student-paymentCard">
         <h2 className="student-sectionTitle">Payment History</h2>
         {loading && <p className="student-status">Loading your payments…</p>}
-        {!loading && payments.length === 0 && (
-          <p className="student-status">No payments submitted yet.</p>
-        )}
+        {!loading && payments.length === 0 && <p className="student-status">No payments submitted yet.</p>}
         {!loading && payments.length > 0 && (
           <div className="student-tableWrap">
             <table className="student-table">
@@ -142,9 +157,7 @@ function StudentPayments() {
                     <td>{payment.paymentMethod}</td>
                     <td>{payment.transactionId}</td>
                     <td>
-                      <span
-                        className={`student-statusBadge student-statusBadge--${paymentStatusClass(payment.status)}`}
-                      >
+                      <span className={`student-statusBadge student-statusBadge--${paymentStatusClass(payment.status)}`}>
                         {formatPaymentStatus(payment.status)}
                       </span>
                     </td>
@@ -156,11 +169,33 @@ function StudentPayments() {
         )}
       </div>
 
+      {/* Submit Payment Form Section */}
       <div className="student-paymentCard">
         <h2 className="student-sectionTitle">Submit Payment</h2>
         {message && <p className="student-success">{message}</p>}
         {error && <p className="student-error">{error}</p>}
         <form className="student-paymentForm" onSubmit={handleSubmit}>
+          
+          {/* Course Dropdown */}
+          <div className="student-paymentField">
+            <label htmlFor="courseSelect">Select Course</label>
+            <select
+              id="courseSelect"
+              name="courseSelect"
+              value={formData.courseId}
+              onChange={handleChange}
+              required
+            >
+              <option value="">-- Select a Course --</option>
+              {availableCourses.map((course) => (
+                <option key={course._id} value={course._id}>
+                  {course.courseName} ({course.courseCode})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Auto-populated Course ID Field */}
           <div className="student-paymentField">
             <label htmlFor="courseId">Course ID</label>
             <input
@@ -168,25 +203,29 @@ function StudentPayments() {
               type="text"
               name="courseId"
               value={formData.courseId}
-              onChange={handleChange}
+              readOnly
+              placeholder="Select a course above"
               required
             />
           </div>
+
+          {/* Auto-populated Course Price Field */}
           <div className="student-paymentField">
             <label htmlFor="coursePrice">Course Price</label>
             <input
               id="coursePrice"
               type="number"
               name="coursePrice"
-              min="1"
-              step="any"
               value={formData.coursePrice}
-              onChange={handleChange}
+              readOnly
+              placeholder="0.00"
               required
             />
           </div>
+
+          {/* Fixed Amount to Pay Field (Resolved cutoff error) */}
           <div className="student-paymentField">
-            <label htmlFor="amount">Amount</label>
+            <label htmlFor="amount">Amount to Pay</label>
             <input
               id="amount"
               type="number"
@@ -198,6 +237,8 @@ function StudentPayments() {
               required
             />
           </div>
+          
+          {/* Payment Method Field */}
           <div className="student-paymentField">
             <label htmlFor="paymentMethod">Payment Method</label>
             <select
@@ -211,6 +252,8 @@ function StudentPayments() {
               <option value="Cash">Cash</option>
             </select>
           </div>
+          
+          {/* Payment Type Field */}
           <div className="student-paymentField">
             <label htmlFor="paymentType">Payment Type</label>
             <select
@@ -224,6 +267,8 @@ function StudentPayments() {
               <option value="partial">Partial Payment</option>
             </select>
           </div>
+
+          {/* Conditional Transaction ID Field */}
           {formData.paymentMethod === "Transfer" && (
             <div className="student-paymentField student-paymentField--full">
               <label htmlFor="transactionId">Transaction ID</label>
@@ -238,11 +283,9 @@ function StudentPayments() {
               />
             </div>
           )}
-          <button
-            className="student-submitBtn"
-            type="submit"
-            disabled={submitting}
-          >
+          
+          {/* Submit Button */}
+          <button className="student-submitBtn" type="submit" disabled={submitting}>
             {submitting ? "Submitting…" : "Submit Payment"}
           </button>
         </form>

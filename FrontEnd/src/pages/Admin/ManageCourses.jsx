@@ -172,7 +172,6 @@ useEffect(() => {
             placeholder="Instructor"
             value={formData.instructor}
             onChange={handleChange}
-            required
             >
               <option value="">Select Instructor</option>
               {instructors.map((inst)=>(

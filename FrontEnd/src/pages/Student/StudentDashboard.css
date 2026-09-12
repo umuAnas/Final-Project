@@ -209,6 +209,12 @@
   font-size: 0.95rem;
   font-weight: 600;
 }
+.student-error{
+  margin: 0 0 1rem;
+  color: #b42318;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
 
 .student-tableWrap {
   overflow-x: auto;
@@ -295,6 +301,13 @@
   font: inherit;
   color: var(--bt-ink);
   background: #fff;
+}
+.student-paymentField input[readOnly] {
+  background-color: rgba(26, 18, 22, 0.03); 
+  color: var(--bt-muted);
+  border-style: dashed; 
+  cursor: not-allowed;
+  user-select: none;
 }
 
 .student-submitBtn {

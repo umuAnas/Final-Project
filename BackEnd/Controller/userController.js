@@ -147,7 +147,6 @@ export const registerUserByAdmin =async (req,res) => {
     try {
         const {
             emailAddress,
-            password,
             phone,
             role,
             passwordResetToken,
@@ -178,12 +177,12 @@ export const registerUserByAdmin =async (req,res) => {
             
 });
  const mailOptions ={
-    from:process.env.EMIL_USER,
+    from:process.env.EMAIL_USER,
     to:emailAddress,
     subject:"Your Account Credentials",
     text:`Hello,\n\nYour account has been successfully created.Your temporary password is:${tempPassword}\n\nPlease log in and update your password immediately. `
  };
- await transporter.sendMail(mailOptions);
+ await transport.sendMail(mailOptions);
 return res.status(201).json({message:"User registered successfully and temporary password sent via email",user:toSafeUser(newUser)})
     } catch (error) {
         res.status(500).json({message:error.message})
