@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./Login.css";
 import { login } from "../../service/authService.js";
-import { useUserContext } from "../../contexts/UseUserContext.jsx";
+import { useUserContext } from "../../contexts/useUserContext.jsx";
  import { getStudentDashboardPath } from "../Student/studentPath.js";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -11,7 +11,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { setUser,setAccessToken } = useUserContext();
+  const { setUser,setAccessToken } = useUserContext("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();

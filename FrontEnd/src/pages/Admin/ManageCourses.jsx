@@ -4,6 +4,7 @@ import { api } from "../../service/axiosInstance";
 import DataTable from "../../components/admin/DataTable";
 import "./AdminShared.css";
 import "./ManageCourses.css";
+// import InstructorsList from "./InstructorsList"
 
 const columnHelper = legacyCreateColumnHelper();
 
@@ -27,7 +28,7 @@ function ManageCourses() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await api.get("/course");
+        const res = await api.get("/course/view");
         const rows = res.data?.data ?? res.data ?? [];
         setCourses(Array.isArray(rows) ? rows : []);
       } catch (err) {
@@ -40,7 +41,8 @@ function ManageCourses() {
 useEffect(() => {
   const fetchInstructors =async () => {
     try {
-      const res = await api.get("/users");
+      const res = await api.get("/users/instructors-list");
+      console.log("Instructors response:",res.data)
       const rows = res.data?.data ?? res.data ?? [];
       setInstructors(Array.isArray(rows) ? rows : []);
     } catch (err) {
@@ -166,16 +168,16 @@ useEffect(() => {
             required
           />
           <select
-            name="instructorId"
-            placeholder="Instructor Id"
-            value={formData.instructorId}
+            name="instructor"
+            placeholder="Instructor"
+            value={formData.instructor}
             onChange={handleChange}
             required
             >
               <option value="">Select Instructor</option>
-              {instructors.map((instructor)=>(
-                <option key={instructor._id} value={instructor._id}>
-                   {instructor.name}
+              {instructors.map((inst)=>(
+                <option key={inst._id} value={inst._id}>
+                   {inst.name}
                 </option>
               ))}
             </select>
