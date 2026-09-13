@@ -1,7 +1,7 @@
 import express from "express";
 
 import {register,viewUser,updateUser,getAllStudents,getAllInstructors,registerUserByAdmin,getStudent
-,updateStudentStatus} from "../Controller/userController.js";
+,updateUserStatus} from "../Controller/userController.js";
 
 import {verifyAccessToken, isAdmin} from "../Middlewares/authMiddleware.js";
 
@@ -66,4 +66,4 @@ userRoute.patch(
     "/status/:id",
     verifyAccessToken,
     isAdmin,
-    updateStudentStatus)
+    updateUserStatus)

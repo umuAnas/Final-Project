@@ -14,36 +14,37 @@ export const createCourse = async (req, res) => {
             programType
         } = req.body;
 
-        
-        const instructor =
-            await User.findById(instructorId);
+        // 1. Only validate the instructor if the field was actually filled out
+        if (instructorId && instructorId.trim() !== "") {
+            const instructor = await User.findById(instructorId);
 
-        if (!instructor) {
-            return res.status(404).json({
-                message: "Instructor not found"
-            });
+            if (!instructor) {
+                return res.status(404).json({
+                    message: "Instructor not found"
+                });
+            }
         }
 
-        const existingCourse =
-            await Course.findOne({ courseCode });
+        const existingCourse = await Course.findOne({ courseCode });
 
         if (existingCourse) {
             return res.status(400).json({
-                message:
-                    "A course with this course code already exists."
+                message: "A course with this course code already exists."
             });
         }
 
-        const newCourse =
-            await Course.create({
-                courseName,
-                courseCode,
-                description,
-                courseDuration,
-                instructorId,
-                batchNumber,
-                programType
-            });
+        // 2. Set to null if it's empty so MongoDB doesn't throw a CastError
+        const finalInstructorId = (instructorId && instructorId.trim() !== "") ? instructorId : null;
+
+        const newCourse = await Course.create({
+            courseName,
+            courseCode,
+            description,
+            courseDuration,
+            instructorId: finalInstructorId, // Save as validated ID or null
+            batchNumber,
+            programType
+        });
 
         return res.status(201).json({
             message: "Course created successfully!",
@@ -56,6 +57,7 @@ export const createCourse = async (req, res) => {
         });
     }
 };
+
 
 
 export const getAllCourses = async (req, res) => {

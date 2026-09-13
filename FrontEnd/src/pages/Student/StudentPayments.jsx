@@ -52,7 +52,7 @@ function StudentPayments() {
       });
 
     // 2. Fetch courses list to populate dropdown
-    api.get("/course")
+    api.get("/course/view")
       .then((res) => {
         if (cancelled) return;
         const rows = res.data?.data ?? res.data ?? [];
@@ -189,7 +189,7 @@ function StudentPayments() {
               <option value="">-- Select a Course --</option>
               {availableCourses.map((course) => (
                 <option key={course._id} value={course._id}>
-                  {course.courseName} ({course.courseCode})
+                  {course.courseName || course.name ||"Unnamed Course"} ({course.courseCode || "No Code"})
                 </option>
               ))}
             </select>

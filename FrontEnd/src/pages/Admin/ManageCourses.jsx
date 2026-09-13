@@ -4,7 +4,6 @@ import { api } from "../../service/axiosInstance";
 import DataTable from "../../components/admin/DataTable";
 import "./AdminShared.css";
 import "./ManageCourses.css";
-// import InstructorsList from "./InstructorsList"
 
 const columnHelper = legacyCreateColumnHelper();
 
@@ -12,15 +11,15 @@ const emptyForm = {
   courseName: "",
   courseCode: "",
   description: "",
-  courseDuration: "",
-  instructorId: "",
+  courseDuration: "", // Make sure this matches your database field ("credits" vs "courseDuration")
+  instructorId: "",   // Keep this initialized
   batchNumber: "",
   programType: "Online",
 };
 
 function ManageCourses() {
   const [courses, setCourses] = useState([]);
-  const [instructors,setInstructors] = useState([])
+  const [instructors, setInstructors] = useState([]);
   const [formData, setFormData] = useState(emptyForm);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -38,19 +37,21 @@ function ManageCourses() {
     };
     fetchCourses();
   }, []);
-useEffect(() => {
-  const fetchInstructors =async () => {
-    try {
-      const res = await api.get("/users/instructors-list");
-      console.log("Instructors response:",res.data)
-      const rows = res.data?.data ?? res.data ?? [];
-      setInstructors(Array.isArray(rows) ? rows : []);
-    } catch (err) {
-      console.log("Failed to load instructors",err);
-    }
-  }
-  fetchInstructors();
-},[])
+
+  useEffect(() => {
+    const fetchInstructors = async () => {
+      try {
+        const res = await api.get("/users/instructors-list");
+        console.log("Instructors response:", res.data);
+        const rows = res.data?.data ?? res.data ?? [];
+        setInstructors(Array.isArray(rows) ? rows : []);
+      } catch (err) {
+        console.log("Failed to load instructors", err);
+      }
+    };
+    fetchInstructors();
+  }, []);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -60,7 +61,15 @@ useEffect(() => {
     setMessage("");
     setError("");
     try {
-      const res = await api.post("/course/create", formData);
+      // Create clean submission payload
+      const submissionData = { ...formData };
+      
+      // OPTIONAL FIX: If no instructor is selected, pass null or delete it so backend validation passes
+      if (!submissionData.instructorId) {
+        submissionData.instructorId = null; 
+      }
+
+      const res = await api.post("/course/create", submissionData);
       setMessage(res.data?.message || "Course created successfully!");
       setFormData(emptyForm);
       const created = res.data?.data ?? res.data;
@@ -93,7 +102,7 @@ useEffect(() => {
         header: "Code",
       }),
       columnHelper.accessor("courseDuration", {
-        header: "courseDuration",
+        header: "Course Duration",
       }),
       columnHelper.accessor("programType", {
         header: "Type",
@@ -167,19 +176,20 @@ useEffect(() => {
             onChange={handleChange}
             required
           />
+          
+          {/* FIXED: name mapped to instructorId, and inner string uses inst.fullName. removed 'required' */}
           <select
-            name="instructor"
-            placeholder="Instructor"
-            value={formData.instructor}
+            name="instructorId" 
+            value={formData.instructorId}
             onChange={handleChange}
-            >
-              <option value="">Select Instructor</option>
-              {instructors.map((inst)=>(
-                <option key={inst._id} value={inst._id}>
-                   {inst.name}
-                </option>
-              ))}
-            </select>
+          >
+            <option value="">Select Instructor (Optional)</option>
+            {instructors.map((inst) => (
+              <option key={inst._id} value={inst._id}>
+                {inst.fullName || inst.name} 
+              </option>
+            ))}
+          </select>
           
           <input
             type="text"

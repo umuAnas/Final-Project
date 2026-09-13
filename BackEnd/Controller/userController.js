@@ -127,14 +127,31 @@ export const getAllStudents = async (req, res) => {
     }
 };
 
+
+
 export const getAllInstructors = async (req, res) => {
     try {
+        // 1. Fetch instructors exactly how you did before
         const instructors = await User
             .find({ role: "instructor" })
             .select("-password -passwordResetToken -passwordResetExpires");
 
+        // 2. Loop through each instructor to count their courses simultaneously
+        const instructorsWithCounts = await Promise.all(
+            instructors.map(async (instructor) => {
+                const count = await Course.countDocuments({ instructorId: instructor._id });
+                
+                // Convert the Mongoose document to a plain object and add courseCount
+                return {
+                    ...instructor.toObject(),
+                    courseCount: count
+                };
+            })
+        );
+
+        // 3. Return the updated data payload to the frontend
         return res.status(200).json({
-            data: instructors
+            data: instructorsWithCounts
         });
 
     } catch (error) {
@@ -143,6 +160,7 @@ export const getAllInstructors = async (req, res) => {
         });
     }
 };
+
 export const registerUserByAdmin =async (req,res) => {
     try {
         const {
@@ -217,13 +235,13 @@ export const getStudent = async (req, res) => {
         });
     }
 };
-export const updateStudentStatus = async (req, res) => {
+export const updateUserStatus = async (req, res) => {
     try {
         const { id } = req.params; 
         const { status } = req.body; // Expecting "active", "blocked", or "finished"
 
         // Match the lowercase enum array
-        const allowedStatuses = ["active", "blocked", "finished"];
+        const allowedStatuses = ["active", "blocked", "finished","left"];
         if (!allowedStatuses.includes(status)) {
             return res.status(400).json({
                 message: "Invalid status value. Must be active, blocked, or finished."
